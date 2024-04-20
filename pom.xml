@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.chx</groupId>
+    <groupId>io.github.atliyasi</groupId>
     <artifactId>ossClient</artifactId>
     <version>1.0</version>
     <name>client</name>
@@ -44,7 +44,6 @@
         <maven-source-plugin.version>2.2.1</maven-source-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.7</nexus-staging-maven-plugin.version>
         <java.version>1.8</java.version>
-        <spring-boot.version>2.7.12</spring-boot.version>
         <server.id.value>ossrh</server.id.value>
     </properties>
     <profiles>
@@ -70,14 +69,13 @@
                 <plugins>
                     <!--用于与 Sonatype Nexus 仓库进行集成，方便在 Maven 构建过程中进行部署和发布操作-->
                     <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>${nexus-staging-maven-plugin.version}</version>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.4.0</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <serverId>${server.id.value}</serverId>
-                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                            <publishingServerId>central</publishingServerId>
+                            <tokenAuth>true</tokenAuth>
                         </configuration>
                     </plugin>
                     <!--Maven编译插件-->
@@ -100,10 +98,12 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${maven-javadoc-plugin.version}</version>
                         <configuration>
+<!--                            <sourcepath>${project.basedir}\src\main\java\com\chx\client</sourcepath>-->
+                            <sourcepath>${project.basedir}</sourcepath>
                             <!-- jdk1.8要加上，1.7要去掉，否则会报错 -->
-                            <additionalJOptions>
-                                <additionalJOption>-Xdoclint:none</additionalJOption>
-                            </additionalJOptions>
+<!--                            <additionalJOptions>-->
+<!--                                <additionalJOption>-Xdoclint:none</additionalJOption>-->
+<!--                            </additionalJOptions>-->
                         </configuration>
                         <executions>
                             <execution>
