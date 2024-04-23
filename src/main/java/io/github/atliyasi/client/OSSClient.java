@@ -1,4 +1,4 @@
-package com.chx.client;
+package io.github.atliyasi.client;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;

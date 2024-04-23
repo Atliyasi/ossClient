@@ -6,7 +6,7 @@
 
     <groupId>io.github.atliyasi</groupId>
     <artifactId>ossClient</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <name>client</name>
     <packaging>jar</packaging>
     <url>https://github.com/Atliyasi/ossClient</url>
@@ -133,8 +133,6 @@
             </build>
         </profile>
     </profiles>
-
-
     <dependencies>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
