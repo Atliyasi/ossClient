@@ -24,9 +24,9 @@ OSSClient ossClient = OSSClient.getClient();
 ```java
 MultipartFile file = new MultipartFile();
 String s = ossClient.uploadBytes("your-bucketName", "your-userId", file.getBytes(), file.getName());
-File testFile = new File("");
+File testFile = new File("file-url");
 String s1 = ossClient.uploadFile("your-bucketName", "your-userId", testFile);
-String s2 = ossClient.uploadFile("your-bucketName", "your-userId", "file-URL");
+String s2 = ossClient.uploadFile("your-bucketName", "your-userId", "file-url");
 ```
 
 3. 解析返回值
