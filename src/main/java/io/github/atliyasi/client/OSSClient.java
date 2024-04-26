@@ -1,5 +1,6 @@
 package io.github.atliyasi.client;
 
+import com.sun.org.apache.bcel.internal.ExceptionConstants;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -30,7 +31,9 @@ import java.util.HashMap;
  */
 public final class OSSClient {
 
-    private String baseURL = "https://chdclouds.com:1236";
+    private String baseURL = "https://chdclouds.com:1236"; // 服务器地址
+    private String secretId; // 秘钥id
+    private String secretKey; // 秘钥key
     public HttpClient httpClient;
 
     /**
@@ -49,6 +52,22 @@ public final class OSSClient {
      */
     public void setBaseURL(String baseURL) {
         this.baseURL = baseURL;
+    }
+
+    public String getSecretId() {
+        return secretId;
+    }
+
+    public void setSecretId(String secretId) {
+        this.secretId = secretId;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     /**
@@ -70,6 +89,28 @@ public final class OSSClient {
                 .build();
     }
 
+    /**
+     * 构造方法，创建一个 OSSClient 实例。
+     * @param secretId : 秘钥id
+     * @param secretKey : 秘钥key
+     */
+    public OSSClient(String secretId, String secretKey) {
+        this.secretId = secretId;
+        this.secretKey = secretKey;
+
+        // 创建一个不进行证书验证的 SSLContext
+        SSLContext sslContext = createTrustAllSSLContext();
+
+        // 创建一个忽略主机名验证的 SSLConnectionSocketFactory
+        SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(
+                sslContext,
+                NoopHostnameVerifier.INSTANCE);
+
+        // 创建 HttpClient，并设置 SSLConnectionSocketFactory
+        httpClient = HttpClients.custom()
+                .setSSLSocketFactory(sslSocketFactory)
+                .build();
+    }
     /**
      * 构造方法，创建一个 OSSClient 实例。
      *
@@ -132,18 +173,39 @@ public final class OSSClient {
      * 将文件以字节数组的形式上传到 OSS 服务器。
      *
      * @param bucketName OSS 存储桶名称
-     * @param userId     用户 ID
+     * @param secretId     秘钥id
+     * @param secretKey     秘钥key
      * @param bytes      文件的字节数组
      * @param fileName   文件名
      * @return 上传结果字符串
      * @throws Exception 可能抛出的异常
      */
-    public String uploadBytes(String bucketName, String userId, byte[] bytes, String fileName) throws Exception {
-        HttpPost post = new HttpPost(this.baseURL + "/oss/upload");
+    public String uploadBytes(String bucketName, String secretId, String secretKey, byte[] bytes, String fileName) throws Exception {
+        HttpPost post = new HttpPost(this.baseURL + "/api/uploadFile");
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
         builder.addTextBody("bucket", bucketName);
-        builder.addTextBody("userId", userId);
+        builder.addTextBody("secretId", secretId);
+        builder.addTextBody("secretKey", secretKey);
+        builder.addBinaryBody("file", bytes, ContentType.DEFAULT_BINARY, fileName);
+
+        post.setEntity(builder.build());
+
+        HttpResponse response = httpClient.execute(post);
+
+        return readResponse(response);
+    }
+
+    public String uploadBytes(String bucketName, byte[] bytes, String fileName) throws Exception {
+        if (this.secretId == null || this.secretKey == null) {
+            throw new IllegalAccessException("secretId or secretKey is null");
+        }
+        HttpPost post = new HttpPost(this.baseURL + "/api/uploadFile");
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+
+        builder.addTextBody("bucket", bucketName);
+        builder.addTextBody("secretId", this.secretId);
+        builder.addTextBody("secretKey", this.secretKey);
         builder.addBinaryBody("file", bytes, ContentType.DEFAULT_BINARY, fileName);
 
         post.setEntity(builder.build());
@@ -157,34 +219,51 @@ public final class OSSClient {
      * 将文件上传到 OSS 服务器。
      *
      * @param bucketName OSS 存储桶名称
-     * @param userId     用户 ID
+     * @param secretId     秘钥id
+     * @param secretKey     秘钥key
      * @param file       要上传的文件
      * @return 上传结果字符串
      * @throws Exception 可能抛出的异常
      */
-    public String uploadFile(String bucketName, String userId, File file) throws Exception {
+    public String uploadFile(String bucketName, String secretId, String secretKey, File file) throws Exception {
         if (!file.isFile()) {
             return "文件为空或不存在该路径";
         }
-        return uploadBytes(bucketName, userId, convertFileToByteArray(file), file.getName());
+        return uploadBytes(bucketName, secretId, secretKey, convertFileToByteArray(file), file.getName());
     }
 
     /**
      * 将指定路径的文件上传到 OSS 服务器。
      *
      * @param bucketName OSS 存储桶名称
-     * @param userId     用户 ID
+     * @param secretId     秘钥id
+     * @param secretKey     秘钥key
      * @param url        文件路径
      * @return 上传结果字符串
      * @throws Exception 可能抛出的异常
      */
-    public String uploadFile(String bucketName, String userId, String url) throws Exception {
+    public String uploadFile(String bucketName, String secretId, String secretKey, String url) throws Exception {
         File file = new File(url);
         if (!file.isFile()) {
             return "文件为空或不存在该路径";
         }
 
-        return uploadBytes(bucketName, userId, convertFileToByteArray(file), file.getName());
+        return uploadBytes(bucketName, secretId, secretKey, convertFileToByteArray(file), file.getName());
+    }
+    public String uploadFile(String bucketName, String url) throws Exception {
+        File file = new File(url);
+        if (!file.isFile()) {
+            return "文件为空或不存在该路径";
+        }
+
+        return uploadBytes(bucketName, convertFileToByteArray(file), file.getName());
+    }
+
+    public String uploadFile(String bucketName, File file) throws Exception {
+        if (!file.isFile()) {
+            return "文件为空或不存在该路径";
+        }
+        return uploadBytes(bucketName, convertFileToByteArray(file), file.getName());
     }
 
     /**
