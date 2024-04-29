@@ -8,7 +8,7 @@
 <dependency>
     <groupId>io.github.atliyasi</groupId>
     <artifactId>ossClient</artifactId>
-    <version>1.1</version>
+    <version>1.3</version>
 </dependency>
 ```
 按以下步骤进行使用：
@@ -17,16 +17,26 @@
 
 ```java
 OSSClient ossClient = OSSClient.getClient();
+OSSClient ossClient = OSSClient.getClient(ServerUrl);
+OSSClient ossClient = OSSClient.getClient(secretId, secretKey);
 ```
 
 2. 调用文件上传方法
 
 ```java
 MultipartFile file = new MultipartFile();
-String s = ossClient.uploadBytes("your-bucketName", "your-userId", file.getBytes(), file.getName());
+String s = ossClient.uploadBytes("your-bucketName", "your-secretId", "your-secretKey", file.getBytes(), file.getName());
 File testFile = new File("file-url");
-String s1 = ossClient.uploadFile("your-bucketName", "your-userId", testFile);
-String s2 = ossClient.uploadFile("your-bucketName", "your-userId", "file-url");
+String s1 = ossClient.uploadFile("your-bucketName", "your-secretId", "your-secretKey", testFile);
+String s2 = ossClient.uploadFile("your-bucketName", "your-secretId", "your-secretKey", "file-url");
+
+// 如果您使用OSSClient.getClient(secretId, secretKey);获取客户端则不需要调用方法时附带秘钥信息
+MultipartFile file = new MultipartFile();
+String s = ossClient.uploadBytes("your-bucketName", file.getBytes(), file.getName());
+File testFile = new File("file-url");
+String s1 = ossClient.uploadFile("your-bucketName", testFile);
+String s2 = ossClient.uploadFile("your-bucketName", "file-url");
+
 ```
 
 3. 解析返回值
