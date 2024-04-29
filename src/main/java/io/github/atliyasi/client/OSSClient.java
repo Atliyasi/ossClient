@@ -159,6 +159,16 @@ public final class OSSClient {
     public static OSSClient getClient(String url) {
         return new OSSClient(url);
     }
+    /**
+     * 获取一个指定基本 URL 的 OSSClient 实例。
+     *
+     * @param secretId 秘钥id
+     * @param secretKey 秘钥key
+     * @return OSSClient 实例
+     */
+    public static OSSClient getClient(String secretId, String secretKey) {
+        return new OSSClient(secretId, secretKey);
+    }
 
     /**
      * 获取一个使用默认基本 URL 的 OSSClient 实例。
